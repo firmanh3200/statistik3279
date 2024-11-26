@@ -25,7 +25,7 @@ with st.container(border=True):
 
     st.subheader('Perkembangan Jumlah Penduduk Kota Banjar')
     
-    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(['Total', 'Jenis Kelamin', 'Umur', 'Status Kawin', 'Kecamatan', 'Desa/Kelurahan'])
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(['Total', 'Jenis Kelamin', 'Status Kawin', 'Kecamatan', 'Desa/Kelurahan', 'Umur'])
     
     fig1 = px.bar(df_total, x='tahun', y='jumlah_penduduk', text='jumlah_penduduk')
     fig2 = px.bar(df, x='tahun', y='jumlah_penduduk', color='jenis_kelamin', 
@@ -55,7 +55,98 @@ with st.container(border=True):
             st.dataframe(df, use_container_width=True, hide_index=True)
             st.caption('Sumber: https://opendata.jabarprov.go.id/id/dataset/jumlah-penduduk-berdasarkan-jenis-kelamin-dan-kabupatenkota-di-jawa-barat')
 
+    
+    # PENDUDUK STATUS KAWIN        
     with tab3:
+        st.subheader('Penduduk Kota Banjar menurut Status Kawin')
+        url4 = 'https://data.jabarprov.go.id/api-backend//bigdata/disdukcapil_2/od_15135_jumlah_penduduk_berdasarkan_status_perkawinan_v1?limit=3000&skip=0&where=%7B%22nama_kabupaten_kota%22%3A%5B%22KOTA+BANJAR%22%5D%7D'
+
+        response4 = requests.get(url4)
+        data4 = response4.json()
+        
+        df4 = pd.DataFrame(data4['data'])
+        
+        fig4 = px.bar(df4, x='tahun', y='jumlah_penduduk', text='jumlah_penduduk', 
+                      color='status_kawin')
+        
+        # Menempatkan legenda di bawah grafik
+        fig4.update_layout(legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=-0.3,
+            xanchor="center",
+            x=0.5,
+            title_text=''
+        ))
+        
+        st.plotly_chart(fig4, use_container_width=True, hide_index=True)
+        
+        with st.expander('Lihat Tabel'):
+            st.dataframe(df4, use_container_width=True, hide_index=True)
+            st.caption('Sumber: https://opendata.jabarprov.go.id/id/dataset/jumlah-penduduk-berdasarkan-status-perkawinan-di-jawa-barat')
+    
+    # PENDUDUK KELURAHAN DAN JENIS KELAMIN
+    url5 = 'https://opendata.banjarkota.go.id/api/bigdata/dinas_kependudukan_dan_pencatatan_sipil/jmlh-pnddk-mnrt-jns-klmn-pr-ds-klrhn-kt-bnjr?sort=id%3Aasc&page=1&per_page=600&where=%7B%7D&where_or=%7B%7D'
+    
+    # Fungsi untuk mengambil data
+    response5 = requests.get(url5)
+    data5 = response5.json()
+
+    # Mengubah data menjadi pandas dataframe
+    df5 = pd.DataFrame(data5['data'])
+    
+    # PENDUDUK MENURUT KECAMATAN
+    with tab4:
+        st.subheader('Penduduk Kota Banjar menurut kecamatan')
+        
+        df5a = df5.groupby(['kemendagri_nama_kecamatan', 'tahun'])['jumlah_penduduk'].sum().reset_index()
+        
+        fig5 = px.bar(df5a, x='tahun', y='jumlah_penduduk', text='jumlah_penduduk', 
+                      color='kemendagri_nama_kecamatan')
+        
+        # Menempatkan legenda di bawah grafik
+        fig5.update_layout(legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=-0.3,
+            xanchor="center",
+            x=0.5,
+            title_text=''
+        ))
+        
+        st.plotly_chart(fig5, use_container_width=True, hide_index=True)
+        
+        with st.expander('Lihat Tabel'):
+            st.dataframe(df5a, use_container_width=True, hide_index=True)
+            st.caption('Sumber: https://opendata.banjarkota.go.id/dataset/jumlah-penduduk-menurut-jenis-kelamin-per-desa-kelurahan-kota-banjar')
+    
+    # PENDUDUK MENURUT DESA
+    with tab5:
+        st.subheader('Penduduk Kota Banjar menurut desa/kelurahan')
+        
+        df6 = df5.groupby(['kemendagri_nama_kecamatan', 'kemendagri_nama_desa_kelurahan', 'tahun'])['jumlah_penduduk'].sum().reset_index()
+        
+        fig6 = px.bar(df6, x='tahun', y='jumlah_penduduk', text='jumlah_penduduk', 
+                      color='kemendagri_nama_desa_kelurahan')
+        
+        # Menempatkan legenda di bawah grafik
+        fig6.update_layout(legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=-0.3,
+            xanchor="center",
+            x=0.5,
+            title_text=''
+        ))
+        
+        st.plotly_chart(fig6, use_container_width=True)
+        
+        with st.expander('Lihat Tabel'):
+            st.dataframe(df6, use_container_width=True, hide_index=True)
+            st.caption('Sumber: https://opendata.banjarkota.go.id/dataset/jumlah-penduduk-menurut-jenis-kelamin-per-desa-kelurahan-kota-banjar')
+    
+    # PENDUDUK UMUR
+    with tab6:
         url3 = 'https://opendata.banjarkota.go.id/api/bigdata/dinas_kependudukan_dan_pencatatan_sipil/jumlah_penduduk_menurut_kelompok_umur_jk_di_kota_banjar'
         
         # Fungsi untuk mendapatkan data dari setiap halaman
@@ -121,95 +212,6 @@ with st.container(border=True):
             st.dataframe(df3, use_container_width=True, hide_index=True)
 
             st.caption('Sumber: https://opendata.banjarkota.go.id/dataset/jumlah-penduduk-menurut-kelompok-umur-dan-jenis-kelamin-di-kota-banjar')
-    
-    # PENDUDUK STATUS KAWIN        
-    with tab4:
-        st.subheader('Penduduk Kota Banjar menurut Status Kawin')
-        url4 = 'https://data.jabarprov.go.id/api-backend//bigdata/disdukcapil_2/od_15135_jumlah_penduduk_berdasarkan_status_perkawinan_v1?limit=3000&skip=0&where=%7B%22nama_kabupaten_kota%22%3A%5B%22KOTA+BANJAR%22%5D%7D'
-
-        response4 = requests.get(url4)
-        data4 = response4.json()
-        
-        df4 = pd.DataFrame(data4['data'])
-        
-        fig4 = px.bar(df4, x='tahun', y='jumlah_penduduk', text='jumlah_penduduk', 
-                      color='status_kawin')
-        
-        # Menempatkan legenda di bawah grafik
-        fig4.update_layout(legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=-0.3,
-            xanchor="center",
-            x=0.5,
-            title_text=''
-        ))
-        
-        st.plotly_chart(fig4, use_container_width=True, hide_index=True)
-        
-        with st.expander('Lihat Tabel'):
-            st.dataframe(df4, use_container_width=True, hide_index=True)
-            st.caption('Sumber: https://opendata.jabarprov.go.id/id/dataset/jumlah-penduduk-berdasarkan-status-perkawinan-di-jawa-barat')
-    
-    # PENDUDUK KELURAHAN DAN JENIS KELAMIN
-    url5 = 'https://opendata.banjarkota.go.id/api/bigdata/dinas_kependudukan_dan_pencatatan_sipil/jmlh-pnddk-mnrt-jns-klmn-pr-ds-klrhn-kt-bnjr?sort=id%3Aasc&page=1&per_page=600&where=%7B%7D&where_or=%7B%7D'
-    
-    # Fungsi untuk mengambil data
-    response5 = requests.get(url5)
-    data5 = response5.json()
-
-    # Mengubah data menjadi pandas dataframe
-    df5 = pd.DataFrame(data5['data'])
-    
-    # PENDUDUK MENURUT KECAMATAN
-    with tab5:
-        st.subheader('Penduduk Kota Banjar menurut kecamatan')
-        
-        df5a = df5.groupby(['kemendagri_nama_kecamatan', 'tahun'])['jumlah_penduduk'].sum().reset_index()
-        
-        fig5 = px.bar(df5a, x='tahun', y='jumlah_penduduk', text='jumlah_penduduk', 
-                      color='kemendagri_nama_kecamatan')
-        
-        # Menempatkan legenda di bawah grafik
-        fig5.update_layout(legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=-0.3,
-            xanchor="center",
-            x=0.5,
-            title_text=''
-        ))
-        
-        st.plotly_chart(fig5, use_container_width=True, hide_index=True)
-        
-        with st.expander('Lihat Tabel'):
-            st.dataframe(df5a, use_container_width=True, hide_index=True)
-            st.caption('Sumber: https://opendata.banjarkota.go.id/dataset/jumlah-penduduk-menurut-jenis-kelamin-per-desa-kelurahan-kota-banjar')
-    
-    # PENDUDUK MENURUT DESA
-    with tab6:
-        st.subheader('Penduduk Kota Banjar menurut desa/kelurahan')
-        
-        df6 = df5.groupby(['kemendagri_nama_kecamatan', 'kemendagri_nama_desa_kelurahan', 'tahun'])['jumlah_penduduk'].sum().reset_index()
-        
-        fig6 = px.bar(df6, x='tahun', y='jumlah_penduduk', text='jumlah_penduduk', 
-                      color='kemendagri_nama_desa_kelurahan')
-        
-        # Menempatkan legenda di bawah grafik
-        fig6.update_layout(legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=-0.3,
-            xanchor="center",
-            x=0.5,
-            title_text=''
-        ))
-        
-        st.plotly_chart(fig6, use_container_width=True)
-        
-        with st.expander('Lihat Tabel'):
-            st.dataframe(df6, use_container_width=True, hide_index=True)
-            st.caption('Sumber: https://opendata.banjarkota.go.id/dataset/jumlah-penduduk-menurut-jenis-kelamin-per-desa-kelurahan-kota-banjar')
     
      
     
